@@ -1,0 +1,18 @@
+{
+  "type": "module",
+  "dependencies": {
+    "@langchain/community": "^0.3.40",
+    "@langchain/core": "^0.3.44",
+    "@langchain/langgraph": "^0.2.64",
+    "@langchain/openai": "^0.5.5",
+    "@modelcontextprotocol/sdk": "^1.9.0",
+    "d3-dsv": "^2.0.0",
+    "dotenv": "^16.4.7",
+    "pg": "^8.14.1",
+    "uuid": "^11.1.0",
+    "zod": "^3.24.2"
+  },
+  "devDependencies": {
+    "@types/pg": "^8.11.12"
+  }
+}
