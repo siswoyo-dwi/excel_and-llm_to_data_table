@@ -1,0 +1,62 @@
+[
+  {
+    "control_id": "RMiT-001",
+    "domain": "Incident Response",
+    "description": "Incident Response control item 1",
+    "applicable_to": "General Insurance",
+    "status": "In Progress",
+    "risk_rating": "Medium",
+    "evidence_link": "/evidence/rmit_001.pdf",
+    "remarks": "Needs review"
+  },
+  {
+    "control_id": "RMiT-002",
+    "domain": "Change Management",
+    "description": "Change Management control item 2",
+    "applicable_to": "Retail Bank",
+    "status": "In Progress",
+    "risk_rating": "Low",
+    "evidence_link": "/evidence/rmit_002.pdf",
+    "remarks": "Verified by compliance team"
+  },
+  {
+    "control_id": "RMiT-003",
+    "domain": "Third-Party Risk",
+    "description": "Third-Party Risk control item 3",
+    "applicable_to": "Digital Bank",
+    "status": "In Progress",
+    "risk_rating": "Medium",
+    "evidence_link": "/evidence/rmit_003.pdf",
+    "remarks": "Verified by compliance team"
+  },
+  {
+    "control_id": "RMiT-004",
+    "domain": "IT Asset Management",
+    "description": "IT Asset Management control item 4",
+    "applicable_to": "Islamic Bank",
+    "status": "Not Implemented",
+    "risk_rating": "Medium",
+    "evidence_link": "/evidence/rmit_004.pdf",
+    "remarks": "Needs review"
+  },
+  {
+    "control_id": "RMiT-005",
+    "domain": "IT Asset Management",
+    "description": "IT Asset Management control item 5",
+    "applicable_to": "Digital Bank",
+    "status": "Partially Implemented",
+    "risk_rating": "High",
+    "evidence_link": "/evidence/rmit_005.pdf",
+    "remarks": "Needs review"
+  },
+  {
+    "control_id": "RMiT-006",
+    "domain": "IT Asset Management",
+    "description": "IT Asset Management control item 6",
+    "applicable_to": "Life Insurance",
+    "status": "Implemented",
+    "risk_rating": "Medium",
+    "evidence_link": "/evidence/rmit_006.pdf",
+    "remarks": ""
+  }
+]

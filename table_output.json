@@ -1,0 +1,47 @@
+[
+  {
+    "page": 1,
+    "headers": [
+      "Control ID",
+      " ",
+      "Domain",
+      " ",
+      "Description",
+      " ",
+      "Applicable To",
+      " ",
+      "Status",
+      " ",
+      "Risk Rati"
+    ],
+    "rows": [
+      {
+        "Control ID": "RMiT-004",
+        " ": "",
+        "Domain": "IT Asset Management IT Asset Management control item 4",
+        "Description": "Islamic Bank",
+        "Applicable To": "Not Implemented",
+        "Status": "Medium",
+        "Risk Rati": ""
+      },
+      {
+        "Control ID": "RMiT-005",
+        " ": "",
+        "Domain": "IT Asset Management IT Asset Management control item 5",
+        "Description": "Digital Bank",
+        "Applicable To": "Partially Implemented",
+        "Status": "",
+        "Risk Rati": ""
+      },
+      {
+        "Control ID": "RMiT-006",
+        " ": "",
+        "Domain": "IT Asset Management IT Asset Management control item 6",
+        "Description": "Life Insurance",
+        "Applicable To": "Implemented",
+        "Status": "Medium",
+        "Risk Rati": ""
+      }
+    ]
+  }
+]

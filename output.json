@@ -1,0 +1,28 @@
+[
+  {
+    "page": 1,
+    "content": [
+      "Control ID",
+      "Domain",
+      "Description",
+      "Applicable To",
+      "Status",
+      "Risk Rati",
+      "RMiT-004",
+      "IT Asset Management IT Asset Management control item 4",
+      "Islamic Bank",
+      "Not Implemented",
+      "Medium",
+      "RMiT-005",
+      "IT Asset Management IT Asset Management control item 5",
+      "Digital Bank",
+      "Partially Implemented",
+      "High",
+      "RMiT-006",
+      "IT Asset Management IT Asset Management control item 6",
+      "Life Insurance",
+      "Implemented",
+      "Medium"
+    ]
+  }
+]
