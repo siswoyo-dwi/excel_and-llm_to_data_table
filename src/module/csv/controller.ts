@@ -3,7 +3,7 @@ import { getExistingTablesAndColumns, getMessageText, extractInsertSQL } from ".
 import { ChatOpenAI } from "@langchain/openai";
 import { Request, Response } from 'express';
 import path from 'path';
-
+import { sq } from "../../config/connection";
 const model = new ChatOpenAI({
     temperature: 0,
     model: "gpt-4o",
@@ -52,9 +52,8 @@ export class Controller {
             \`\`\`
 
             Pertanyaan:
-            Apakah salah satu tabel di atas cocok untuk menyimpan data dari CSV ini? 
-            Jika iya, sebutkan nama tabel tersebut dan buat query INSERT-nya.
-            Jika tidak ada yang cocok, berikan saran struktur tabel baru (CREATE TABLE).
+            Buat query INSERT untuk menyimpan data dari CSV ke tabel yang sesuai.
+            Jika tidak ada yang cocok, kembalikan error.
             `;
 
             const checkRes = await model.invoke(checkPrompt);
@@ -67,9 +66,14 @@ export class Controller {
 
             if (!insertSQL) {
                 return res.status(400).json({ error: "No INSERT SQL generated" });
+            }else{
+                 await sq.query(insertSQL).then(function () {
+                    return res.json({status:200,message:'Sukses Input data'});
+                 }).catch(function () {
+                    return res.json({status:500,message:'Error Input data'});
+                 })
             }
 
-            return res.json({ sql: insertSQL });
         } catch (err) {
             console.error("Error in convert:", err);
             return res.status(500).json({ error: "Internal server error" });

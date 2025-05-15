@@ -1,66 +1,111 @@
-import { CSVLoader } from "@langchain/community/document_loaders/fs/csv";
-import { getExistingTablesAndColumns,getMessageText,extractInsertSQL } from "../../convert/table";
-import { ChatOpenAI } from "@langchain/openai";
-import  { Request, Response } from 'express';
+import ExcelJS from 'exceljs';
+import { Document } from '@langchain/core/documents';
 
+import { getExistingTablesAndColumns, getMessageText, extractInsertSQL } from "../../convert/table";
+import { ChatOpenAI } from "@langchain/openai";
+import { Request, Response } from 'express';
+import path from 'path';
+import { sq } from "../../config/connection";
 const model = new ChatOpenAI({
-  temperature: 0,
-  model: "gpt-4o",
+    temperature: 0,
+    model: "gpt-4o",
 });
 
-
-export class Controller {
-    static async convert(req:Request,res:Response) {
-      try {
-        let filePath = ''
-            if(req.files){
-                if(req.files.file1){
-                     filePath = './asset/file/' + req.files.file1[0].filename
-                }
-            }
-        const loader = new CSVLoader(filePath);
-        const docs = await loader.load();
-    
-        // Ambil semua teks dari CSV
-        const csvData = docs.map(doc => doc.pageContent).join("\n");
-    
-        const tableMap = await getExistingTablesAndColumns();
-        const tableSchemaString = Object.entries(tableMap)
-        .map(([table, cols]) => {
-            const colStr = cols.map(c => `${c.column} (${c.type})`).join(", ");
-            return `- ${table}: ${colStr}`;
-        }).join("\n");
-    
-        const checkPrompt = `
-        CSV Data:
-        \`\`\`
-        ${csvData.slice(0, 1500)}
-        \`\`\`
-    
-        Tabel yang tersedia:
-        \`\`\`
-        ${tableSchemaString}
-        \`\`\`
-    
-        Pertanyaan:
-        Apakah salah satu tabel di atas cocok untuk menyimpan data dari CSV ini? 
-        Jika iya, sebutkan nama tabel tersebut dan buat query INSERT-nya.
-        Jika tidak ada yang cocok, berikan saran struktur tabel baru (CREATE TABLE).
-        `;
-        const checkRes = await model.invoke(checkPrompt);
-        const checkOutput = getMessageText(checkRes).trim();
-        console.log("LLM Response:\n", checkOutput);                 
-        const insertSQL = extractInsertSQL(checkOutput);
-        if (!insertSQL) {
-          console.error("Tidak ditemukan SQL INSERT di respons LLM.");
-          return;
-        }
-    
-            return insertSQL
-        } catch (err) {
-            return "Terjadi error:"+ err
-        } finally {
-      }
-    }
+interface UploadedFiles {
+    [fieldname: string]: Express.Multer.File[];
 }
 
+export class Controller {
+    static async convert(req: Request & { files?: UploadedFiles }, res: Response) {
+        try {
+            if (!req.files || !req.files.file1) {
+                return res.status(400).json({ error: "No file uploaded" });
+            }
+
+            const uploadedFile = req.files.file1[0];
+            const filePath = path.join('./asset/file/', uploadedFile.filename);
+
+            // Process Excel file
+            const workbook = new ExcelJS.Workbook();
+            await workbook.xlsx.readFile(filePath);
+            
+            // Get first worksheet
+            const worksheet = workbook.worksheets[0];
+            
+            // Extract headers
+            const headerRow = worksheet.getRow(1);
+            const headers = headerRow.values.slice(1).map(String); // Skip first empty value
+
+            // Extract data rows
+            const rows = [];
+            worksheet.eachRow({ includeEmpty: false }, (row, rowNumber) => {
+                if (rowNumber === 1) return; // Skip header row
+                
+                const rowData = {};
+                row.eachCell({ includeEmpty: true }, (cell, colNumber) => {
+                    rowData[headers[colNumber-1]] = cell.value;
+                });
+                rows.push(rowData);
+            });
+
+            // Format data for LLM
+            const formattedData = rows.map(row => 
+                headers.map(header => `${header}: ${row[header] || ''}`).join(', ')
+            ).join('\n');
+
+            const tableMap = await getExistingTablesAndColumns();
+            const tableSchemaString = Object.entries(tableMap)
+                .map(([table, cols]) => {
+                    const colStr = cols.map(c => `${c.column} (${c.type})`).join(", ");
+                    return `- ${table}: ${colStr}`;
+                }).join("\n");
+
+            // Improved prompt with specific instructions
+            const checkPrompt = `
+            Data dari Excel:
+            Kolom: ${headers.join(', ')}
+            
+            Contoh Data:
+            ${formattedData.slice(0, 1500)}
+
+            Tabel yang tersedia:
+            ${tableSchemaString}
+
+            Instruksi:
+            1. Cocokkan kolom Excel dengan kolom tabel yang tersedia
+            2. Buat query INSERT SQL untuk semua data
+            3. Format nilai sesuai tipe kolom (string dalam quotes, tanggal dalam format SQL, dll)
+            4. Jika tidak ada tabel yang cocok, kembalikan error
+
+            Contoh format yang diharapkan:
+            INSERT INTO nama_tabel (col1, col2) VALUES 
+            ('val1', 'val2'),
+            ('val3', 'val4');
+            `;
+
+            const checkRes = await model.invoke(checkPrompt);
+            const checkOutput = getMessageText(checkRes).trim();
+            const insertSQL = extractInsertSQL(checkOutput);
+
+            if (!insertSQL) {
+                return res.status(400).json({ error: "No valid INSERT SQL generated" });
+            }
+
+            await sq.query(insertSQL)
+                .then(() => res.json({ status: 200, message: 'Data berhasil diinput'}))
+                .catch(err => res.status(500).json({ 
+                    status: 500, 
+                    message: 'Error input data', 
+                    error: err.message,
+                    generatedSQL: insertSQL 
+                }));
+
+        } catch (err) {
+            console.error("Error in convert:", err);
+            return res.status(500).json({ 
+                error: "Internal server error",
+                details: err.message 
+            });
+        }
+    }
+}

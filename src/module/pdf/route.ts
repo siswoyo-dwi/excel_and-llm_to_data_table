@@ -5,6 +5,6 @@ import upload from "../../helper/upload";
 
 const router = Router()
 
-router.post('/convert', authentification,upload, Controller.convert)
+router.post('/convert',upload, Controller.convert)
 
 export default router
